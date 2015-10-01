@@ -9,7 +9,7 @@ defmodule Docs.MessageController do
   def index(conn, _params) do
     doc = conn.assigns.document
 
-    messages = Repo.all(from m in assoc(doc, :messages))
+    messages = Repo.all(from m in assoc(doc, :messages), order_by: m.id)
     render(conn, "index.html", messages: messages)
   end
 
