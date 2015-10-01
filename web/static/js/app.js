@@ -19,3 +19,53 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+import {Socket} from "deps/phoenix/web/static/js/phoenix"
+
+let socket = new Socket("/socket", {
+  logger: (kind, msg, data) => {
+    console.log(`${kind}: ${msg}`, data)
+  },
+  params: {token: window.userToken}
+})
+
+socket.connect()
+socket.onOpen( () => console.log("connected!"))
+
+let App = {
+  init() {
+    let docId = $("#doc-form").data("id")
+    let docChan = socket.channel("documents:" + docId)
+    let editor = new Quill("#editor")
+    let docForm = $("#doc-form")
+    let saveTimer = null
+
+    editor.on("text-change", (ops, source) => {
+      if (source != "user") { return }
+      clearTimeout(saveTimer)
+      saveTimer = setTimeout(() => {
+        this.save(docChan, editor)
+      }, 2500)
+      docChan.push("text_change", {ops: ops})
+    })
+
+    docForm.on("submit", e => {
+      e.preventDefault()
+        this.save(docChan, editor)
+    })
+
+    docChan.on("text_change", ({ops}) => {
+      editor.updateContents(ops)
+    })
+    docChan.join()
+      .receive("ok", resp => console.log("joined!", resp))
+      .receive("error", reason => console.log("error!", reason))
+  },
+  save(docChan, editor) {
+    let body = editor.getHTML()
+    let title = $("#document_title").val()
+    docChan.push("save", {body: body, title: title})
+      .receive("ok", () => console.log("saved!"))
+  }
+}
+
+App.init()
