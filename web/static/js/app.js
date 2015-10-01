@@ -60,8 +60,12 @@ let App = {
     })
 
     docChan.on("insert_img", ({url, start, end}) => {
-      editor.deleteText(start, end)
-      editor.insertEmbed(start, "image", url)
+      if (url !== "") {
+        editor.deleteText(start, end)
+        editor.insertEmbed(start, "image", url)
+      } else {
+        console.log("we couldn't find an image for " + editor.getText(start, end))
+      }
     })
     docChan.on("new_message", msg => {
       this.appendMessage(msg, msgContainer, docChan)
