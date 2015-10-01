@@ -29,7 +29,7 @@ config :logger, :console, format: "[$level] $message\n"
 # Configure your database
 config :docs, Docs.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
+  username: "jeff",
   password: "postgres",
   database: "docs_dev",
   size: 10 # The amount of database connections in the pool
